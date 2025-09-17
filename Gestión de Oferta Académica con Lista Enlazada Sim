@@ -1,0 +1,289 @@
+Gestión de Oferta Académica con Lista Enlazada Simple
+
+Descripción del Problema
+========================
+
+El Departamento de Sistemas de una universidad requiere una aplicación para gestionar su oferta académica, donde cada clase debe administrar a sus alumnos mediante una estructura de datos de lista enlazada simple. Se prohíbe el uso de colecciones de alto nivel (como arrays dinámicos, listas de librería o mapas). Todas las operaciones deben realizarse recorriendo y manipulando directamente la lista enlazada.
+
+Requisitos Funcionales
+======================
+
+1. Clase Class:
+   - Atributos: id (cadena), name (cadena), credits (entero positivo).
+   - Mantiene una referencia al primer nodo de una lista enlazada de alumnos (head).
+   - Métodos: crear, consultar, actualizar, eliminar.
+   - Al eliminar una clase, se debe liberar correctamente toda la lista de alumnos.
+
+2. Clase Student (nodo de la lista):
+   - Atributos: firstName, lastName, idNumber (único), semester, program.
+   - Puntero next al siguiente alumno.
+   - No puede usarse ninguna colección externa; solo nodos enlazados.
+
+Operaciones sobre Alumnos
+=========================
+
+- Inscripción (insertar): 
+  * Insertar nuevo nodo en orden por lastName o idNumber.
+  * Se opta por insertar en orden ascendente por idNumber (para garantizar unicidad y facilitar búsquedas posteriores).
+  * Validar que no exista ya un alumno con el mismo idNumber.
+  * Si el idNumber es único, insertar en posición correcta manteniendo el orden.
+
+- Actualización:
+  * Buscar un alumno por idNumber.
+  * Modificar sus campos (excepto idNumber, que es clave).
+  * Retornar si se encontró y actualizó.
+
+- Consulta:
+  * Recorrer desde head hasta encontrar coincidencias o listar todos los inscritos.
+  * Mostrar información completa de cada estudiante.
+
+- Retiro (eliminar):
+  * Eliminar un nodo por idNumber.
+  * Manejar casos especiales:
+    - Lista vacía.
+    - Eliminación del primer nodo (actualizar head).
+    - Eliminación de un nodo intermedio.
+    - Eliminación del último nodo.
+  * Mantener integridad de punteros next.
+
+Validaciones
+============
+- Al registrar un alumno:
+  * Verificar que credits > 0.
+  * Verificar que idNumber no exista en la lista.
+- Al actualizar:
+  * Mostrar mensaje claro si el nodo fue encontrado o no.
+- Al eliminar:
+  * Confirmar que la lista queda consistente.
+  * Garantizar que consultas posteriores no retornan referencias erróneas.
+
+Diseño de Clases
+================
+
+Clase Student (Nodo)
+--------------------
+Atributos:
+  - firstName: String
+  - lastName: String
+  - idNumber: int (único)
+  - semester: int
+  - program: String
+  - next: Student* (puntero al siguiente nodo)
+
+Constructor:
+  - Student(firstName, lastName, idNumber, semester, program)
+
+Métodos:
+  - toString(): devuelve representación textual del alumno.
+
+Clase Class
+-----------
+Atributos:
+  - id: String
+  - name: String
+  - credits: int
+  - head: Student* (puntero al primer alumno)
+
+Constructor:
+  - Class(id, name, credits)
+
+Métodos:
+  1. addStudent(Student student)
+     - Inserta un nuevo alumno en orden por idNumber.
+     - Verifica duplicados y validez de créditos.
+     - Devuelve true si se agregó, false si ya existe.
+
+  2. findStudent(int idNumber)
+     - Recorre la lista desde head buscando por idNumber.
+     - Retorna el nodo si lo encuentra, null si no.
+
+  3. updateStudent(int idNumber, Student updatedData)
+     - Busca el alumno por idNumber.
+     - Si lo encuentra, actualiza sus atributos (excepto idNumber).
+     - Retorna true si se actualizó, false si no se encontró.
+
+  4. removeStudent(int idNumber)
+     - Elimina el alumno con ese idNumber.
+     - Maneja casos especiales (primer, último, intermedio).
+     - Actualiza head si es necesario.
+     - Libera memoria del nodo eliminado.
+     - Retorna true si se eliminó, false si no se encontró.
+
+  5. listAllStudents()
+     - Recorre la lista y muestra todos los alumnos.
+     - Maneja caso de lista vacía.
+
+  6. isEmpty()
+     - Retorna true si head == null.
+
+  7. destroyList()
+     - Libera todos los nodos de la lista (usando recorrido y delete).
+     - Establece head = null.
+
+Pseudocódigo de Operaciones
+============================
+
+1. addStudent(student)
+   Input: student (objeto Student)
+   Output: boolean
+   Begin
+      If credits <= 0 Then
+         Return false
+      End If
+
+      If head == null Then
+         head = student
+         Return true
+      End If
+
+      current = head
+      prev = null
+
+      While current != null And current.idNumber < student.idNumber
+         prev = current
+         current = current.next
+      End While
+
+      // Verificar duplicado
+      If current != null And current.idNumber == student.idNumber Then
+         Return false
+      End If
+
+      // Insertar antes de current
+      student.next = current
+      If prev == null Then
+         head = student
+      Else
+         prev.next = student
+      End If
+
+      Return true
+   End
+
+2. findStudent(idNumber)
+   Input: idNumber (int)
+   Output: Student or null
+   Begin
+      current = head
+      While current != null
+         If current.idNumber == idNumber Then
+            Return current
+         End If
+         current = current.next
+      End While
+      Return null
+   End
+
+3. updateStudent(idNumber, updatedData)
+   Input: idNumber (int), updatedData (Student)
+   Output: boolean
+   Begin
+      node = findStudent(idNumber)
+      If node == null Then
+         Return false
+      End If
+
+      node.firstName = updatedData.firstName
+      node.lastName = updatedData.lastName
+      node.semester = updatedData.semester
+      node.program = updatedData.program
+
+      Return true
+   End
+
+4. removeStudent(idNumber)
+   Input: idNumber (int)
+   Output: boolean
+   Begin
+      If head == null Then
+         Return false
+      End If
+
+      If head.idNumber == idNumber Then
+         temp = head
+         head = head.next
+         Delete temp
+         Return true
+      End If
+
+      current = head
+      prev = null
+
+      While current != null And current.idNumber != idNumber
+         prev = current
+         current = current.next
+      End While
+
+      If current == null Then
+         Return false
+      End If
+
+      prev.next = current.next
+      Delete current
+      Return true
+   End
+
+5. listAllStudents()
+   Begin
+      If head == null Then
+         Print "No hay estudiantes inscritos."
+         Return
+      End If
+
+      current = head
+      While current != null
+         Print current.toString()
+         current = current.next
+      End While
+   End
+
+6. destroyList()
+   Begin
+      While head != null
+         temp = head
+         head = head.next
+         Delete temp
+      End While
+   End
+
+Justificación de Decisiones
+===========================
+
+- Ordenamiento por idNumber:
+  * El idNumber es único por diseño, lo que permite usarlo como clave primaria.
+  * Permite búsquedas eficientes (aunque sean lineales) y evita duplicados fácilmente.
+  * Facilita el mantenimiento de orden para futuras mejoras (ej. búsqueda binaria en estructuras más complejas).
+
+- Uso de lista enlazada simple:
+  * Cumple con el requisito técnico.
+  * Es eficiente para inserciones y eliminaciones en medio de la lista.
+  * Requiere manejo manual de punteros, lo cual fortalece la comprensión de estructuras de datos.
+
+- Gestión de memoria:
+  * Cada eliminación libera el nodo usando delete.
+  * La destrucción de la lista libera todos los nodos secuencialmente.
+  * Evita fugas de memoria.
+
+Entregable
+==========
+
+Este archivo de texto (.txt) contiene:
+- Descripción del problema.
+- Diseño de clases.
+- Pseudocódigos completos.
+- Justificaciones técnicas.
+
+Se recomienda implementar estas clases en un lenguaje como C++ o Java (con punteros o referencias), utilizando SublimeText como editor.
+
+Para entregar:
+1. Guardar este contenido como "gestion_academica.txt".
+2. Crear un repositorio Git nuevo (por ejemplo, en GitHub).
+3. Subir el archivo txt.
+4. Incluir un enlace al repositorio en el documento final.
+
+Ejemplo de enlace:
+https://github.com/usuario/gestion-academica.git
+
+Nota: La implementación real debe seguir estos pseudocódigos y mantener la coherencia en la gestión de punteros y validaciones.
+
+Fin del Documento
